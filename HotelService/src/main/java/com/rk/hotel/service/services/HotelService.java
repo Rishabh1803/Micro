@@ -9,4 +9,5 @@ public interface HotelService {
     Hotel create(Hotel hotel);
     List<Hotel> getAll();
     Hotel get(String id);
+    boolean deleteHotel(String hotelId);
 }

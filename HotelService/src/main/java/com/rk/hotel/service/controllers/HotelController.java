@@ -4,7 +4,6 @@ import com.rk.hotel.service.entities.Hotel;
 import com.rk.hotel.service.services.HotelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,5 +29,11 @@ public class HotelController {
     @GetMapping
     public ResponseEntity<List<Hotel>> getAll(){
         return ResponseEntity.ok(hotelService.getAll());
+    }
+
+    @DeleteMapping("/{hotelId}")
+    public ResponseEntity.BodyBuilder deleteHotel(@PathVariable String hotelId){
+        boolean deletion = hotelService.deleteHotel(hotelId);
+        return ResponseEntity.status(deletion ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }

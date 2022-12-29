@@ -10,15 +10,11 @@ import com.rk.user.service.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private HotelService hotelService;
 
-    private static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
     public User saveUser(User user) {
@@ -44,7 +40,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUsers() {
         List<User> users = userRepository.findAll();
-        users.forEach(user -> user.setRatings(restTemplate.getForObject("http://RATING-SERVICE/ratings/users/" + user.getUserId(), ArrayList.class)));
+        logger.info("Getting all the users");
+        users.forEach(user ->
+                    user.setRatings(
+                            Arrays.stream(Objects.requireNonNull(restTemplate.getForObject("http://RATING-SERVICE/ratings/users/" + user.getUserId(), Rating[].class))).toList()));
+        //
+        users.forEach(user -> user.setRatings(
+                Arrays.stream(
+                                Objects.requireNonNull(restTemplate.getForObject("http://RATING-SERVICE/ratings/users/" + user.getUserId(), Rating[].class))
+                        ).toList()
+                        .stream().peek(rating ->
+                                rating.setHotel(hotelService.getHotel(rating.getHotelId()))
+                        ).toList()
+        ));
         return users;
     }
 
@@ -54,6 +62,9 @@ public class UserServiceImpl implements UserService {
         //Fetch rating of the user from RATING_SERVICE
         //http://localhost:8083/ratings/users/{userId}
         Rating[] ratingOfUser = restTemplate.getForObject("http://RATING-SERVICE/ratings/users/" + userId, Rating[].class);
+        if(ratingOfUser == null){
+            return user;
+        }
         List<Rating> ratings = Arrays.stream(ratingOfUser).toList();
 
         List<Rating> ratingList = ratings.stream().peek(rating -> {
@@ -66,5 +77,15 @@ public class UserServiceImpl implements UserService {
         logger.info("{}", ratingList);
         user.setRatings(ratingList);
         return user;
+    }
+
+    @Override
+    public boolean deleteUser(String userId) {
+        try{
+            userRepository.delete(this.getUser(userId));
+        } catch (Exception e){
+            return false;
+        }
+        return true;
     }
 }

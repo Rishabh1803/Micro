@@ -35,4 +35,10 @@ public class RatingController {
     public ResponseEntity<List<Rating>> getRatingByHotelId(@PathVariable String hotelId){
         return ResponseEntity.ok(ratingService.getRatingByHotelId(hotelId));
     }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity.BodyBuilder deleteRating(@PathVariable String userId){
+        boolean deletion = ratingService.deleteRatingsByUserId(userId);
+        return ResponseEntity.status(deletion ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
 }

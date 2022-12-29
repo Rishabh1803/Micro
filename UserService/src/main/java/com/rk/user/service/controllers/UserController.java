@@ -32,4 +32,10 @@ public class UserController {
         List<User> allUser = userService.getAllUsers();
         return ResponseEntity.ok(allUser);
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity.BodyBuilder deleteUser(@PathVariable String userId){
+        boolean deletion = userService.deleteUser(userId);
+        return ResponseEntity.status(deletion ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
 }

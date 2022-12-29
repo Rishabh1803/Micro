@@ -10,4 +10,5 @@ public interface RatingService {
     List<Rating> getRatings();
     List<Rating> getRatingByUserId(String userId);
     List<Rating> getRatingByHotelId(String hotelId);
+    boolean deleteRatingsByUserId(String userId);
 }
